@@ -18,7 +18,7 @@ hyperactivity in male mice, but hemideletion in D1-SPNs does not. Within the str
 
 ## Pre-processing raw fastq files with CellRanger 10x Genomics pipeline
 
-This is an example of bash script to submit the CellRanger 10x Genomics pipeline on University of Iowa Argon cluster node for one sample:
+This is an example of bash script to submit the CellRanger 10x Genomics pipeline on University of Iowa Argon cluster node for one sample, repeat this process for each individual sample:
 
 ```
 #!/bin/bash
