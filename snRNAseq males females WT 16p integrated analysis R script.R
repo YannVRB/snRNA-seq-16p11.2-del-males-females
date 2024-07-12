@@ -120,4 +120,70 @@ combined$celltype <- Idents(combined)
 Idents(combined) <- "celltype.dataset"
 
 #Identify differential expressed genes between 16p11.2 del/+ male and wildtype male.
-dSPNs.DEGs <- FindMarkers(combined, ident.1 = "dSPNs_hetmale", ident.2 = "dSPNs_WTmale", verbose = FALSE)
+dSPNs.DEGs.male <- FindMarkers(combined, ident.1 = "dSPNs_hetmale", ident.2 = "dSPNs_WTmale", verbose = FALSE)
+
+
+### Heatmap of genes inside the 16p11.2 deletion
+library(ComplexHeatmap)
+library(circlize)
+
+# Create a vector of genes located inside the 16p11.2 deletion
+genes_of_interest <- c("Coro1a", "Mapk3", "Gm9967", "Ypel3", "Tbx6", "Ppp4c", "Aldoa", "Fam57b",
+                       "Gm15676", "Doc2a", "Ino80e", "Hirip3", "Taok2", "Tmem219", "Kctd13",
+                       "Gm21984", "Asphd1", "Sez6l2", "D830044I16Rik", "Cdipt", "Mvp", "Prrt2",
+                       "Gm42742", "Maz", "Kif22", "RP23-142A14.9", "AI467606", "Qprt", "Cd2bp2",
+                       "Tbc1d10b", "Mylpf", "Spn")
+
+# Filter dataframes to include only the genes of interest
+dSPNsmale_filtered <- dSPNsmale[rownames(dSPNs.DEGs.male) %in% genes_of_interest, , drop = FALSE]
+iSPNsmale_filtered <- iSPNsmale[rownames(iSPNs.DEGs.male) %in% genes_of_interest, , drop = FALSE]
+dSPNsfemale_filtered <- dSPNsfemale[rownames(dSPNs.DEGs.female) %in% genes_of_interest, , drop = FALSE]
+iSPNsfemale_filtered <- iSPNsfemale[rownames(iSPNs.DEGs.female) %in% genes_of_interest, , drop = FALSE]
+
+# Ensure the rows are in the same order for each dataframe
+dSPNsmale_ordered <- dSPNsmale_filtered[match(genes_of_interest, rownames(dSPNsmale_filtered)), , drop = FALSE]
+iSPNsmale_ordered <- iSPNsmale_filtered[match(genes_of_interest, rownames(iSPNsmale_filtered)), , drop = FALSE]
+dSPNsfemale_ordered <- dSPNsfemale_filtered[match(genes_of_interest, rownames(dSPNsfemale_filtered)), , drop = FALSE]
+iSPNsfemale_ordered <- iSPNsfemale_filtered[match(genes_of_interest, rownames(iSPNsfemale_filtered)), , drop = FALSE]
+
+# Combine the ordered dataframes into a single dataframe
+combined_df <- cbind(dSPNsmale_ordered[, "avg_log2FC", drop = FALSE],
+                     iSPNsmale_ordered[, "avg_log2FC", drop = FALSE],
+                     dSPNsfemale_ordered[, "avg_log2FC", drop = FALSE],
+                     iSPNsfemale_ordered[, "avg_log2FC", drop = FALSE])
+
+# Rename columns for clarity
+colnames(combined_df) <- c("dSPNsmale", "iSPNsmale", "dSPNsfemale", "iSPNsfemale")
+
+# Define the rownames to be removed
+rows_to_remove <- c("NA", "NA.1", "NA.2", "NA.3", "NA.4", "NA.5", "NA.6", "NA.7")
+
+# Remove the specified rows
+combined_df <- combined_df[!rownames(combined_df) %in% rows_to_remove, ]
+
+
+# Convert the combined dataframe to a matrix
+combined_matrix <- as.matrix(combined_df)
+
+# Define the color scale
+col_fun <- colorRamp2(c(min(combined_matrix), max(combined_matrix)), c("blue", "white"))
+
+# Sort the matrix rows based on the minimum value in each row
+sorted_indices <- order(apply(combined_matrix, 1, min))
+sorted_matrix <- combined_matrix[sorted_indices, ]
+
+# Create the heatmap with the specified color gradient and clustering
+heatmap <- Heatmap(sorted_matrix, name = "avg_logFC",
+                   cluster_rows = TRUE, cluster_columns = FALSE,
+                   show_row_names = TRUE, show_column_names = TRUE,
+                   row_names_side = "left",
+                   row_names_gp = gpar(fontsize = 5),
+                   column_names_gp = gpar(fontsize = 8),
+                   col = col_fun)
+
+draw(heatmap, merge_legends = TRUE)
+
+# Save as PDF
+pdf("heatmap.pdf", width = 3, height = 4)  # Adjust width and height as needed
+draw(heatmap, merge_legends = TRUE)
+dev.off()
