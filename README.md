@@ -1,15 +1,20 @@
-# Sex- and Cell type-specific impact of genetic variation associated with neurodevelopmental disorders on the striatum
+# A chromosome region linked to neurodevelopmental disorders acts in distinct neuronal circuits in males and females to control locomotor behavior
 
 ## Highlights
 
--	Spiny projection neurons (SPNs) exhibit sex- and cell type-specific transcriptomic changes in 16p11.2 hemideletion (16p11.2 del/+) mice.
--	Sex-specific transcriptomic changes are influenced by wildtype sex differences.
--	In males, but not in females, D2-SPNs specific 16p11.2 del/+ mediates hyperactive behavior.
--	D2-SPNs specific 16p11.2 del/+ in dorsal lateral striatum mediates the male hyperactive behavior.
+-	16p11.2 hemideletion (16p11.2 del/+) induces sex- and cell type-specific transcriptomic signatures in spiny projection neurons (SPNs).
+- Transcriptomic changes in GABA signaling in D1-SPNs align with changes in inhibitory synapse function.
+- 16p11.2 del/+ in D2-SPNs causes hyperactivity in males but not females.
+- 16p11.2 del/+ in D2-SPNs in the dorsal lateral striatum drives hyperactivity in males.
+- 16p11.2 del/+ in cortex drives hyperactivity in both sexes.
  
 ## Summary
 
-Sex is a major factor shaping the manifestation and progression of neurodevelopmental disorders (NDDs), however, it remains poorly understood. Hemideletion of the 16p11.2 region (16p11.2 del/+) is associated with NDDs, displaying sex-specific striatum-related phenotypes resembling NDDs. Striatal circuits, crucial for locomotor control, consist of two distinct pathways: the direct (D1) and indirect (D2) projecting spiny projection neurons (SPNs).  In this study, we establish the causal relationship between the 16p11.2 locus and specific cell types in the striatum in male and female mice. Using snRNA-seq, we identified sex-specific and cell type-specific transcriptomic changes in the striatum of 16p11.2 del/+ mice. Interestingly, these sex-specific transcriptomic changes are influenced by wildtype sex differences. Further pathway analysis unveiled differential gene expression changes linked to synaptic plasticity in D1- and D2-SPNs, as well as GABA signaling pathway changes in D1-SPNs. Besides, 16p11.2 del/+ mediates distinct synaptic function changes in miniature inhibitory postsynaptic current (mIPSC) between D1- and D2-SPNs. Behaviorally, we observe that conditional 16p11.2 del/+ within D2-SPNs phenocopies hyperactivity in male mice, but not within D1-SPNs. Moreover, we found 16p11.2 del/+ within D2-SPNs in the dorsal lateral striatum resulted in a profound hyper locomotor phenotype. Our work reveals that loci linked to NDDs act distinctly in different striatal circuits, impacting behavior in a sex- and cell type-specific manner. This proposes a novel perspective on a potential mechanism of male vulnerability or female resilience to NDDs.
+Biological sex shapes the manifestation and progression of neurodevelopmental disorders (NDDs). These disorders often demonstrate male-specific vulnerabilities; however, the identification of underlying mechanisms remains a significant challenge in the field. Hemideletion of the 16p11.2 region (16p11.2 del/+) is associated with NDDs, and mice modeling 16p11.2 del/+ exhibit sex-specific striatum-related phenotypes
+relevant to NDDs. Striatal circuits, crucial for locomotor control, consist of two distinct pathways: the direct and indirect pathways originating from D1 dopamine receptor (D1R) and D2 dopamine receptor (D2R) expressing spiny projection neurons (SPNs), respectively. In this study, we define the impact of 16p11.2 del/+ on striatal circuits in male and female mice. Using snRNA-seq, we identify sex- and cell type-specific
+transcriptomic changes in the D1- and D2-SPNs of 16p11.2 del/+ mice, indicating distinct transcriptomic signatures in D1-SPNs and D2-SPNs in males and females, with a ~5-fold greater impact in males. Further pathway analysis reveals differential gene expression changes in 16p11.2 del/+ male mice linked to synaptic plasticity in D1- and D2-SPNs and GABA signaling pathway changes in D1-SPNs. Consistent with our
+snRNA-seq study revealing changes in GABA signaling pathways, we observe distinct changes in miniature inhibitory postsynaptic currents (mIPSCs) in D1- and D2-SPNs from 16p11.2 del/+ male mice. Behaviorally, we utilize conditional genetic approaches to introduce the hemideletion selectively in either D1- or D2-SPNs and find that conditional hemideletion of genes in the 16p11.2 region in D2-SPNs causes
+hyperactivity in male mice, but hemideletion in D1-SPNs does not. Within the striatum, hemideletion of genes in D2-SPNs in the dorsal lateral striatum leads to hyperactivity in males, demonstrating the importance of this striatal region. Interestingly, conditional 16p11.2 del/+ within the cortex drives hyperactivity in both sexes. Our work reveals that a locus linked to NDDs acts in different striatal circuits, selectively impacting behavior in a sex- and cell type-specific manner, providing new insight into male vulnerability for NDDs.
 
 ## Pre-processing raw fastq files with CellRanger 10x Genomics pipeline
 
