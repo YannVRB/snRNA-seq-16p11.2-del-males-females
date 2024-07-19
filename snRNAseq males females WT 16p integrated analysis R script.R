@@ -1,4 +1,10 @@
 library(Seurat)
+library(readxl)
+library(ggplot2)
+library(ggrepel)
+library(ggpubr)
+library(writexl)
+library(DESeq2)
 
 #Load the CellRanger outputs of individual sample
 WTmale1.data <- Read10X(data.dir = "/Shared/NEURO/AbelLab/Yann/scRNA-seq_16p11.2_males/Sample795/outs/filtered_feature_bc_matrix")
@@ -187,3 +193,277 @@ draw(heatmap, merge_legends = TRUE)
 pdf("heatmap.pdf", width = 3, height = 4)  # Adjust width and height as needed
 draw(heatmap, merge_legends = TRUE)
 dev.off()
+
+
+## Pseudobulk analysis of D1 and D2 SPNs for quadrant plot
+combined$ClusterNames <- combined@active.ident
+bulk <- AggregateExpression(combined, return.seurat = T, slot = "counts", assays = "RNA", group.by = c("ClusterNames", "sample")
+# Get the cell names
+cell_names <- Cells(bulk)
+
+# Identify cells that contain "D2-SPNs" in their name
+d1_spns_cells <- grep("eSPNs", cell_names, value = TRUE)
+
+
+# Subset the Seurat object to keep only these cells
+bulk_d1_spns <- subset(bulk, cells = d1_spns_cells)
+
+# Extract the count data
+count_data <- GetAssayData(bulk_d1_spns, slot = "counts")
+
+# Create metadata dataframe
+metadata <- data.frame(cell = colnames(count_data))
+metadata$condition <- ifelse(grepl("WTfemale", metadata$cell), "WTfemale", 
+                             ifelse(grepl("hetfemale", metadata$cell), "hetfemale", 
+                                    ifelse(grepl("WTmale", metadata$cell), "WTmale", "hetmale")))
+
+# Ensure that cell names are the row names of metadata
+row.names(metadata) <- metadata$cell
+metadata$cell <- NULL
+
+# Ensure that the count data columns and metadata rows match
+if (all(colnames(count_data) == rownames(metadata))) {
+  # Create the DESeq2 dataset
+  dds <- DESeqDataSetFromMatrix(countData = count_data, colData = metadata, design = ~ condition)
+  
+  # Filter low count genes (optional but recommended)
+  dds <- dds[rowSums(counts(dds)) > 1, ]
+  
+  # Run the DESeq2 analysis
+  dds <- DESeq(dds)
+  
+  # Define the comparisons
+  comparisons <- list(
+    c("hetmale", "WTmale"),
+    c("hetfemale", "WTfemale"),
+    c("WTfemale", "WTmale")
+  )
+  
+  # Define the file path
+  output_file <- "DESeq2_results_comparisons.xlsx"
+  
+  # Initialize the workbook
+  wb <- createWorkbook()
+  
+  for (comparison in comparisons) {
+    # Extract the results for the current comparison
+    res <- results(dds, contrast = c("condition", comparison[1], comparison[2]))
+    
+    # Order results by adjusted p-value
+    res <- res[order(res$padj), ]
+    
+    # Convert DESeq2 results to a data frame
+    res_df <- as.data.frame(res)
+    
+    # Add a new sheet with the comparison name
+    sheet_name <- paste(comparison[1], "vs", comparison[2], sep = "_")
+    addWorksheet(wb, sheet_name)
+    
+    # Write the data frame to the worksheet
+    writeData(wb, sheet = sheet_name, x = res_df, rowNames = TRUE)
+  }
+  
+  # Save the workbook to the file
+  saveWorkbook(wb, output_file, overwrite = TRUE)
+  
+  cat("Results have been successfully exported to", output_file)
+} else {
+  cat("The count data columns and metadata rows do not match.")
+}
+
+# Define the path to the Excel file
+input_file <- "DESeq2_results_comparisons.xlsx"
+
+# Read the results for the specified comparisons
+results_WTfemale_vs_WTmale <- read_excel(input_file, sheet = "WTfemale_vs_WTmale")
+results_hetmale_vs_WTmale <- read_excel(input_file, sheet = "hetmale_vs_WTmale")
+
+# Ensure the rownames are the gene names
+rownames(results_WTfemale_vs_WTmale) <- results_WTfemale_vs_WTmale$...1
+rownames(results_hetmale_vs_WTmale) <- results_hetmale_vs_WTmale$...1
+
+# Extract log2 fold changes
+log2FC_WTfemale_vs_WTmale <- results_WTfemale_vs_WTmale$log2FoldChange
+log2FC_hetmale_vs_WTmale <- results_hetmale_vs_WTmale$log2FoldChange
+
+# Create a data frame with the log2 fold changes
+fold_changes <- data.frame(
+  gene = rownames(results_WTfemale_vs_WTmale),
+  log2FC_WTfemale_vs_WTmale = log2FC_WTfemale_vs_WTmale,
+  log2FC_hetmale_vs_WTmale = log2FC_hetmale_vs_WTmale
+)
+
+# List of specified genes
+specified_genes_d1 <- c(
+  "Rnf121", "Gm26825", "Malat1", "Kcnq1ot1", "Gm10600", "Grin2b", "Gm42418", "Nisch", "Ank3", "Ttc3", "Trank1", 
+  "Ddx5", "Crocc", "Ssbp4", "Atp6v0b", "Aldoa", "Gm48715", "Cdk9", "Gm26724", "Rab11fip2", "Meg3", "Ppp3ca", "Eif1", 
+  "Gsdme", "Elavl3", "Rbm39", "Dock3", "Kcnq2", "Plekha6", "Syt7", "Gm16105", "Sf3b3", "Cacnb4", "Tspoap1", 
+  "Sgcz", "Gabarapl2", "Grik2", "AI314180", "Ypel3", "Kif1b", "Cacna1a", "Fam193b", "Camk2b", "Ryr3", "Ppargc1b", 
+  "Tmem181a", "Grin1", "Acp1", "Srcin1", "Golga4", "Negr1", "Tmem131", "Gm26699", "Kmt2e", "Atp9b", "Rpl21", 
+  "Klhl33", "Pcdhgc4", "Gm27032", "Ttc19", "Hirip3", "Sptbn4", "Ahi1", "Lrrc7", "Gm16152", "Tshz1", 
+  "Il1rapl1", "Zfp445", "Pebp1", "Gm10848", "Tra2a", "Actn1", "Aste1", "Timp4", "Ppfia4", "Zfp846", "Emsy", "Pitpnm1", 
+  "Zfp644", "Trim35", "Gm42722", "Adcy5", "4833420G17Rik", "Cpne5", "Pcsk2", "Mpped2", "Prrc2b", "Prrc2a", "Adgrl1", 
+  "Zc3h11a", "Snhg11", "Clip4", "Strn", "Safb2", "Ankrd17", "AY036118", "Unc13a", "Mirg"
+)
+
+# Subset the fold changes data frame
+subset_fold_changes <- fold_changes[fold_changes$gene %in% specified_genes_d1, ]
+
+# Scatter plot
+ggplot(subset_fold_changes, aes(x = log2FC_WTfemale_vs_WTmale, y = log2FC_hetmale_vs_WTmale)) +
+  geom_point() +
+  geom_text_repel(aes(label = gene)) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  stat_cor(method = "pearson", label.x = -4, label.y = 4) +
+  labs(title = "D1-SPN DEGs between 16p males vs wt females",
+       x = "Pseudobulk log2 fold change (WTfemale vs WTmale)",
+       y = "Pseudobulk log2 fold change (hetmale vs WTmale)") +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+p1 <- ggplot(subset_fold_changes, aes(x = log2FC_WTfemale_vs_WTmale, y = log2FC_hetmale_vs_WTmale)) +
+  geom_point() +
+  geom_text_repel(aes(label = gene)) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  stat_cor(method = "pearson", label.x = -4, label.y = 4) +
+  labs(title = "D1-SPN DEGs between 16p males vs wt females",
+       x = "Pseudobulk log2 fold change (WTfemale vs WTmale)",
+       y = "Pseudobulk log2 fold change (hetmale vs WTmale)") +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+# Save the plot as a PDF
+ggsave("D1-SPN DEGs between 16p males vs wt females.pdf", plot = p1, width = 8, height = 6)
+# Save the subset_fold_changes dataframe to an Excel file
+write_xlsx(subset_fold_changes, "D1-SPN DEGs between 16p males vs wt females subset_fold_changes.xlsx")
+
+# Identify cells that contain "D2-SPNs" in their name
+d2_spns_cells <- grep("D2-SPNs", cell_names, value = TRUE)
+
+
+# Subset the Seurat object to keep only these cells
+bulk_d2_spns <- subset(bulk, cells = d2_spns_cells)
+
+# Extract the count data
+count_data <- GetAssayData(bulk_d2_spns, slot = "counts")
+
+# Create metadata dataframe
+metadata <- data.frame(cell = colnames(count_data))
+metadata$condition <- ifelse(grepl("WTfemale", metadata$cell), "WTfemale", 
+                             ifelse(grepl("hetfemale", metadata$cell), "hetfemale", 
+                                    ifelse(grepl("WTmale", metadata$cell), "WTmale", "hetmale")))
+
+# Ensure that cell names are the row names of metadata
+row.names(metadata) <- metadata$cell
+metadata$cell <- NULL
+
+# Ensure that the count data columns and metadata rows match
+if (all(colnames(count_data) == rownames(metadata))) {
+  # Create the DESeq2 dataset
+  dds <- DESeqDataSetFromMatrix(countData = count_data, colData = metadata, design = ~ condition)
+  
+  # Filter low count genes (optional but recommended)
+  dds <- dds[rowSums(counts(dds)) > 1, ]
+  
+  # Run the DESeq2 analysis
+  dds <- DESeq(dds)
+  
+  # Define the comparisons
+  comparisons <- list(
+    c("hetmale", "WTmale"),
+    c("hetfemale", "WTfemale"),
+    c("WTfemale", "WTmale")
+  )
+  
+  # Define the file path
+  output_file <- "DESeq2_results_comparisons.xlsx"
+  
+  # Initialize the workbook
+  wb <- createWorkbook()
+  
+  for (comparison in comparisons) {
+    # Extract the results for the current comparison
+    res <- results(dds, contrast = c("condition", comparison[1], comparison[2]))
+    
+    # Order results by adjusted p-value
+    res <- res[order(res$padj), ]
+    
+    # Convert DESeq2 results to a data frame
+    res_df <- as.data.frame(res)
+    
+    # Add a new sheet with the comparison name
+    sheet_name <- paste(comparison[1], "vs", comparison[2], sep = "_")
+    addWorksheet(wb, sheet_name)
+    
+    # Write the data frame to the worksheet
+    writeData(wb, sheet = sheet_name, x = res_df, rowNames = TRUE)
+  }
+  
+  # Save the workbook to the file
+  saveWorkbook(wb, output_file, overwrite = TRUE)
+  
+  cat("Results have been successfully exported to", output_file)
+} else {
+  cat("The count data columns and metadata rows do not match.")
+}
+
+# Define the path to the Excel file
+input_file <- "DESeq2_results_comparisons.xlsx"
+
+# Read the results for the specified comparisons
+results_WTfemale_vs_WTmale <- read_excel(input_file, sheet = "WTfemale_vs_WTmale")
+results_hetmale_vs_WTmale <- read_excel(input_file, sheet = "hetmale_vs_WTmale")
+
+# Ensure the rownames are the gene names
+rownames(results_WTfemale_vs_WTmale) <- results_WTfemale_vs_WTmale$...1
+rownames(results_hetmale_vs_WTmale) <- results_hetmale_vs_WTmale$...1
+
+# Extract log2 fold changes
+log2FC_WTfemale_vs_WTmale <- results_WTfemale_vs_WTmale$log2FoldChange
+log2FC_hetmale_vs_WTmale <- results_hetmale_vs_WTmale$log2FoldChange
+
+# Create a data frame with the log2 fold changes
+fold_changes <- data.frame(
+  gene = rownames(results_WTfemale_vs_WTmale),
+  log2FC_WTfemale_vs_WTmale = log2FC_WTfemale_vs_WTmale,
+  log2FC_hetmale_vs_WTmale = log2FC_hetmale_vs_WTmale
+)
+
+# List of specified genes
+specified_genes_d2 <- c("Gsdme", "Gm42418", "Grin2b", "Malat1", "Gm26825", "Gm16105", "Rnf121", "Pcsk2", "Srcin1", 
+                     "Ttc3", "Ube3a", "Atp6v0b", "Trim35", "Kcnq1ot1", "Sgcz", "Acp1", "Ypel3", "Sez6", "Ddx5", 
+                     "Cbl", "Rpl21", "Tmem158", "Celf2", "Kalrn", "Ank3", "Trim2", "Opcml", "Penk", "Rbm39", 
+                     "Tmem181a", "Unc79", "Il1rapl1", "Traip", "Gm26699", "Gm10600", "4833420G17Rik", "Chd3", 
+                     "Itsn2", "Timp4", "Ryr3", "Snhg11", "Aste1", "Ftl1-ps1", "Ttc19", "Snhg12", "Dgkh", 
+                     "2900055J20Rik", "Fam193b", "Strip2", "Golga4", "Adgrb1", "Prpf4b", "Ssbp4", "3100002H09Rik", 
+                     "Rab11fip2", "Gm26724", "Unc13a", "Gm27032", "Gm16152", "Gm48715", "Epb41", "Baz2a", "Actn1", 
+                     "Snx29", "Ddx50", "Ablim2", "Pde4a", "Rb1cc1", "Aldoa", "Gm5136", "Maz", "Hirip3", "Trank1", 
+                     "Gabarapl2", "Pitpnm1", "Atxn2", "Herc1", "Camk2b", "Ppp3ca", "Negr1", "Ylpm1", "Tspoap1", 
+                     "A230057D06Rik", "Crocc", "Adgrl1", "Elavl3", "Mprip", "Lrp1", "Eml5", "Adcy5", "Mtcl1", 
+                     "Hnrnpu", "Celf3", "Pebp1", "Rasgef1a", "Eif1", "Ubb", "Ddx17", "Sez6l2", "Trrap", "Zfp445", 
+                     "Fam228a", "Gm26917", "Gm15594", "Rasgrp2", "Usp7", "Slc16a6", "Zfp950", "Lage3", "Prrc2b", "Pde1b", "Kmt2e", "1110059E24Rik", "Clip4")
+
+# Subset the fold changes data frame
+subset_fold_changes <- fold_changes[fold_changes$gene %in% specified_genes_d2, ]
+
+# Scatter plot
+p <- ggplot(subset_fold_changes, aes(x = log2FC_WTfemale_vs_WTmale, y = log2FC_hetmale_vs_WTmale)) +
+  geom_point() +
+  geom_text_repel(aes(label = gene)) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  stat_cor(method = "pearson", label.x = -4, label.y = 4) +
+  labs(title = "D2-SPN DEGs between 16p males vs wt females",
+       x = "Pseudobulk log2 fold change (WTfemale vs WTmale)",
+       y = "Pseudobulklog2 fold change (hetmale vs WTmale)") +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+# Save the plot as a PDF
+ggsave("D2-SPN DEGs between 16p males vs wt females.pdf", plot = p, width = 8, height = 6)
+# Save the subset_fold_changes dataframe to an Excel file
+write_xlsx(subset_fold_changes, "D2-SPN DEGs between 16p males vs wt females subset_fold_changes.xlsx")
