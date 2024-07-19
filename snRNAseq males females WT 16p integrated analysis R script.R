@@ -310,18 +310,6 @@ specified_genes_d1 <- c(
 subset_fold_changes <- fold_changes[fold_changes$gene %in% specified_genes_d1, ]
 
 # Scatter plot
-ggplot(subset_fold_changes, aes(x = log2FC_WTfemale_vs_WTmale, y = log2FC_hetmale_vs_WTmale)) +
-  geom_point() +
-  geom_text_repel(aes(label = gene)) +
-  geom_vline(xintercept = 0, color = "black") +
-  geom_hline(yintercept = 0, color = "black") +
-  stat_smooth(method = "lm", color = "blue", se = FALSE) +
-  stat_cor(method = "pearson", label.x = -4, label.y = 4) +
-  labs(title = "D1-SPN DEGs between 16p males vs wt females",
-       x = "Pseudobulk log2 fold change (WTfemale vs WTmale)",
-       y = "Pseudobulk log2 fold change (hetmale vs WTmale)") +
-  theme_minimal() +
-  theme(panel.grid = element_blank())
 p1 <- ggplot(subset_fold_changes, aes(x = log2FC_WTfemale_vs_WTmale, y = log2FC_hetmale_vs_WTmale)) +
   geom_point() +
   geom_text_repel(aes(label = gene)) +
@@ -450,7 +438,7 @@ specified_genes_d2 <- c("Gsdme", "Gm42418", "Grin2b", "Malat1", "Gm26825", "Gm16
 subset_fold_changes <- fold_changes[fold_changes$gene %in% specified_genes_d2, ]
 
 # Scatter plot
-p <- ggplot(subset_fold_changes, aes(x = log2FC_WTfemale_vs_WTmale, y = log2FC_hetmale_vs_WTmale)) +
+p2 <- ggplot(subset_fold_changes, aes(x = log2FC_WTfemale_vs_WTmale, y = log2FC_hetmale_vs_WTmale)) +
   geom_point() +
   geom_text_repel(aes(label = gene)) +
   geom_vline(xintercept = 0, color = "black") +
@@ -464,6 +452,6 @@ p <- ggplot(subset_fold_changes, aes(x = log2FC_WTfemale_vs_WTmale, y = log2FC_h
   theme(panel.grid = element_blank())
 
 # Save the plot as a PDF
-ggsave("D2-SPN DEGs between 16p males vs wt females.pdf", plot = p, width = 8, height = 6)
+ggsave("D2-SPN DEGs between 16p males vs wt females.pdf", plot = p2, width = 8, height = 6)
 # Save the subset_fold_changes dataframe to an Excel file
 write_xlsx(subset_fold_changes, "D2-SPN DEGs between 16p males vs wt females subset_fold_changes.xlsx")
