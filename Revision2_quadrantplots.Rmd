@@ -1,0 +1,633 @@
+```{r}
+library(Seurat)
+library(readxl)
+library(ggplot2)
+library(ggrepel)
+library(ggpubr)
+library(dplyr)
+```
+
+```{r}
+# Read the results for the specified comparisons
+d1_spn <- read_excel("D1-SPN DEGs between 16p males vs wt females subset_fold_changes.xlsx")
+d2_spn <- read_excel("D2-SPN DEGs between 16p males vs wt females subset_fold_changes.xlsx")
+```
+
+```{r}
+d1_spn_filt <- d1_spn %>%
+  filter(log2FC_hetmale_vs_WTmale <= -0.2 | log2FC_hetmale_vs_WTmale >= 0.2)
+
+ggplot(d1_spn_filt, aes(x = log2FC_hetmale_vs_WTmale, y = log2FC_WTfemale_vs_WTmale)) +
+  geom_point() +
+  geom_text_repel(aes(label = gene)) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  stat_cor(method = "pearson", label.x = -4, label.y = 4) +
+  labs(title = "D1-SPN DEGs between 16p males vs wt females - method = pearson",
+       x = "Pseudobulk log2 fold change (hetmale vs WTmale)",
+       y = "Pseudobulk log2 fold change (WTfemale vs WTmale)") +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+quad_counts <- d1_spn_filt %>%
+  mutate(quadrant = case_when(
+    log2FC_hetmale_vs_WTmale >= 0 & log2FC_WTfemale_vs_WTmale >= 0 ~ "Q1: x+, y+",
+    log2FC_hetmale_vs_WTmale <  0 & log2FC_WTfemale_vs_WTmale >= 0 ~ "Q2: x-, y+",
+    log2FC_hetmale_vs_WTmale <  0 & log2FC_WTfemale_vs_WTmale <  0 ~ "Q3: x-, y-",
+    log2FC_hetmale_vs_WTmale >= 0 & log2FC_WTfemale_vs_WTmale <  0 ~ "Q4: x+, y-"
+  )) %>%
+  count(quadrant) %>%
+  arrange(quadrant)
+
+print(quad_counts)
+```
+
+
+```{r}
+d2_spn_filt <- d2_spn %>%
+  filter(log2FC_hetmale_vs_WTmale <= -0.2 | log2FC_hetmale_vs_WTmale >= 0.2)
+
+ggplot(d2_spn_filt, aes(x = log2FC_hetmale_vs_WTmale, y = log2FC_WTfemale_vs_WTmale)) +
+  geom_point() +
+  geom_text_repel(aes(label = gene)) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  stat_cor(method = "pearson", label.x = -4, label.y = 4) +
+  labs(title = "D2-SPN DEGs between 16p males vs wt females - method = pearson",
+       x = "Pseudobulk log2 fold change (hetmale vs WTmale)",
+       y = "Pseudobulk log2 fold change (WTfemale vs WTmale)") +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+quad_counts <- d2_spn_filt %>%
+  mutate(quadrant = case_when(
+    log2FC_hetmale_vs_WTmale >= 0 & log2FC_WTfemale_vs_WTmale >= 0 ~ "Q1: x+, y+",
+    log2FC_hetmale_vs_WTmale <  0 & log2FC_WTfemale_vs_WTmale >= 0 ~ "Q2: x-, y+",
+    log2FC_hetmale_vs_WTmale <  0 & log2FC_WTfemale_vs_WTmale <  0 ~ "Q3: x-, y-",
+    log2FC_hetmale_vs_WTmale >= 0 & log2FC_WTfemale_vs_WTmale <  0 ~ "Q4: x+, y-"
+  )) %>%
+  count(quadrant) %>%
+  arrange(quadrant)
+
+print(quad_counts)
+```
+
+```{r}
+d1_spn_filt <- d1_spn %>%
+  filter(log2FC_hetmale_vs_WTmale <= -0.2 | log2FC_hetmale_vs_WTmale >= 0.2)
+
+ggplot(d1_spn_filt, aes(x = log2FC_hetmale_vs_WTmale, y = log2FC_WTfemale_vs_WTmale)) +
+  geom_point() +
+  geom_text_repel(aes(label = gene)) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  stat_cor(method = "spearman", label.x = -4, label.y = 4) +
+  labs(title = "D1-SPN DEGs between 16p males vs wt females - method = spearman",
+       x = "Pseudobulk log2 fold change (hetmale vs WTmale)",
+       y = "Pseudobulk log2 fold change (WTfemale vs WTmale)") +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+quad_counts <- d1_spn_filt %>%
+  mutate(quadrant = case_when(
+    log2FC_hetmale_vs_WTmale >= 0 & log2FC_WTfemale_vs_WTmale >= 0 ~ "Q1: x+, y+",
+    log2FC_hetmale_vs_WTmale <  0 & log2FC_WTfemale_vs_WTmale >= 0 ~ "Q2: x-, y+",
+    log2FC_hetmale_vs_WTmale <  0 & log2FC_WTfemale_vs_WTmale <  0 ~ "Q3: x-, y-",
+    log2FC_hetmale_vs_WTmale >= 0 & log2FC_WTfemale_vs_WTmale <  0 ~ "Q4: x+, y-"
+  )) %>%
+  count(quadrant) %>%
+  arrange(quadrant)
+
+print(quad_counts)
+```
+
+```{r}
+# 1) exclude sex-driven genes + filter |x| >= 0.2 on x-axis (hetmale vs WTmale)
+d1_spn_filtered <- d1_spn %>%
+  filter(!gene %in% c("Rnf121", "Gm26825", "Tmem181a", "Zc3h11a")) %>%
+  filter(log2FC_hetmale_vs_WTmale <= -0.2 | log2FC_hetmale_vs_WTmale >= 0.2)
+
+# 2) thresholds for labeling (match plot axes!)
+x_high <-  2.0   # for x = log2FC_hetmale_vs_WTmale
+x_low  <- -2.0
+y_high <-  0.5   # for y = log2FC_WTfemale_vs_WTmale
+y_low  <- -0.8
+
+# 3) choose points to label using the SAME column names as the plot
+lab_df <- d1_spn_filtered %>%
+  filter(log2FC_hetmale_vs_WTmale >  x_high |
+         log2FC_hetmale_vs_WTmale <  x_low  |
+         log2FC_WTfemale_vs_WTmale > y_high |
+         log2FC_WTfemale_vs_WTmale < y_low)
+
+# 4) plot
+ggplot(d1_spn_filtered,
+       aes(x = log2FC_hetmale_vs_WTmale, y = log2FC_WTfemale_vs_WTmale)) +
+  geom_point() +
+  geom_text_repel(data = lab_df, aes(label = gene), max.overlaps = Inf, na.rm = TRUE) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  stat_cor(method = "pearson") +
+  labs(
+    title = "D1-SPN DEGs between 16p males vs wt females - Pearson - outliers excluded",
+    x = "Pseudobulk log2 fold change (hetmale vs WTmale)",
+    y = "Pseudobulk log2 fold change (WTfemale vs WTmale)"
+  ) +
+  theme_minimal() +
+  theme(panel.grid = element_blank(), plot.title = element_text(size = 12))
+
+ggplot(d1_spn_filtered, aes(x = log2FC_hetmale_vs_WTmale, y = log2FC_WTfemale_vs_WTmale)) +
+  geom_point() +
+  geom_text_repel(data = lab_df, aes(label = gene), max.overlaps = Inf) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  stat_cor(method = "spearman") +
+  labs(title = "D1-SPN DEGs between 16p males vs wt females - method = spearman - outlayers excluded",
+       x = "Pseudobulk log2 fold change (hetmale vs WTmale)",
+       y = "Pseudobulk log2 fold change (WTfemale vs WTmale)") +
+  theme_minimal() +
+  theme(panel.grid = element_blank(), plot.title = element_text(size = 12))
+```
+
+```{r}
+bulk_16pfemales <- read_excel("BulkRNAseqDGEs16pfemales.xlsx")
+bulk_16pmales <- read_excel("BulkRNAseqDGEs16pmales.xlsx")
+WTmalesfemales <- read_excel("DGEanalysis_RUV2_3gWTmalesVS3gWTfemales.xlsx")
+```
+
+```{r}
+## --- Build merged df (already filtered for FDR etc.)
+bulk <- bulk_16pmales %>%
+  rename(gene = matches("(?i)^gene\\s*name$"),
+         FDR_bulk   = FDR) %>%
+  filter(FDR_bulk < 0.05, !gene %in% c("Tyr","Kdm5d"))%>%
+  filter(logFC <= -0.2 | logFC >= 0.2)
+
+wtmf <- WTmalesfemales %>%
+  rename(gene = matches("(?i)^gene\\s*name$"),
+         logFC_wtmf = logFC) %>%
+  filter(!gene %in% c("Tyr"))
+
+df <- inner_join(
+  wtmf %>% select(gene, logFC_wtmf),
+  bulk %>% select(gene, logFC),
+  by = "gene"
+)
+
+## --- Select genes to label by your thresholds
+lab_df <- df %>%
+  filter(logFC > 2 | logFC < -1.5 |
+         logFC_wtmf > 0.4 | logFC_wtmf < -0.4)
+
+## --- Plot
+ggplot(df, aes(x = logFC, y = logFC_wtmf)) +
+  geom_point() +
+  geom_text_repel(data = lab_df, aes(label = gene), max.overlaps = Inf) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  ggpubr::stat_cor(method = "pearson", label.x = min(df$logFC) + 5, label.y = max(df$logFC_wtmf) - 1) +
+  labs(
+    title = "mRNA-seq DEGs between 16p males vs wt males",
+    x = "Fold Change from 16p male mutant vs 16p female WT",
+    y = "Fold Change from 16p female WT vs 16p male WT"
+  ) +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+
+
+quad_counts <- df %>%
+  mutate(
+    quadrant = case_when(
+      logFC_wtmf >= 0 & logFC >= 0 ~ "Q1: x+, y+",
+      logFC_wtmf <  0 & logFC >= 0 ~ "Q2: x-, y+",
+      logFC_wtmf <  0 & logFC <  0 ~ "Q3: x-, y-",
+      logFC_wtmf >= 0 & logFC <  0 ~ "Q4: x+, y-"
+    )
+  ) %>%
+  count(quadrant)
+
+quad_counts
+
+quad_candidates <- df %>%
+  filter(logFC > 0 & logFC_wtmf > 0) %>%   # upper-right quadrant
+  pull(gene)
+```
+
+```{r}
+## --- Build merged df (already filtered for FDR etc.)
+bulk <- bulk_16pfemales %>%
+  rename(gene = matches("(?i)^gene\\s*name$"),
+         FDR_bulk   = FDR) %>%
+  filter(FDR_bulk < 0.05, !gene %in% c("Tyr","Kdm5d"))%>%
+  filter(logFC <= -0.2 | logFC >= 0.2)
+
+wtmf <- WTmalesfemales %>%
+  rename(gene = matches("(?i)^gene\\s*name$"),
+         logFC_wtmf = logFC) %>%
+  filter(!gene %in% c("Tyr"))
+
+df <- inner_join(
+  wtmf %>% select(gene, logFC_wtmf),
+  bulk %>% select(gene, logFC),
+  by = "gene"
+)
+
+## --- Select genes to label by your thresholds
+lab_df <- df %>%
+  filter(logFC > 2 | logFC < -1.5 |
+         logFC_wtmf > 0.4 | logFC_wtmf < -0.4)
+
+## --- Plot
+ggplot(df, aes(x = logFC, y = logFC_wtmf)) +
+  geom_point() +
+  geom_text_repel(data = lab_df, aes(label = gene), max.overlaps = Inf) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  ggpubr::stat_cor(method = "pearson", label.x = min(df$logFC) + 5, label.y = max(df$logFC_wtmf) - 1) +
+  labs(
+    title = "mRNA-seq DEGs between 16p females vs wt females",
+    x = "Fold Change from 16p female mutant vs 16p female WT",
+    y = "Fold Change from 16p female WT vs 16p male WT"
+  ) +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+
+
+quad_counts <- df %>%
+  mutate(
+    quadrant = case_when(
+      logFC_wtmf >= 0 & logFC >= 0 ~ "Q1: x+, y+",
+      logFC_wtmf <  0 & logFC >= 0 ~ "Q2: x-, y+",
+      logFC_wtmf <  0 & logFC <  0 ~ "Q3: x-, y-",
+      logFC_wtmf >= 0 & logFC <  0 ~ "Q4: x+, y-"
+    )
+  ) %>%
+  count(quadrant)
+
+quad_counts
+
+```
+
+```{r}
+# --- FEMALE DEL vs WT FEMALE: use the UNFILTERED table for the primary test
+bulk_female_all <- bulk_16pfemales %>%
+  rename(gene = matches("(?i)^gene\\s*name$"),
+         logFC_female = logFC)
+
+# (A) PRIMARY: bring all candidates into female comparison (no DEG filter)
+candidate_effects_all <- tibble(gene = quad_candidates) %>%
+  left_join(bulk_female_all %>% select(gene, logFC_female), by = "gene") %>%
+  filter(is.finite(logFC_female)) %>%   # drop genes missing in female table
+  mutate(direction = as.integer(logFC_female > 0))
+
+n_A <- nrow(candidate_effects_all)
+k_A <- sum(candidate_effects_all$direction)
+bt_A <- binom.test(k_A, n_A, p = 0.5, alternative = "greater")
+
+cat(sprintf("[PRIMARY] Positives: %d/%d (%.1f%%)  p=%.4g\n",
+            k_A, n_A, 100*k_A/n_A, bt_A$p.value))
+
+# --- (B) SECONDARY/SENSITIVITY: restrict to significant female DEGs (your filtered bulk)
+bulk_female_sig <- bulk_16pfemales %>%
+  rename(gene = matches("(?i)^gene\\s*name$"),
+         logFC_female = logFC,
+         FDR_bulk     = FDR) %>%
+  filter(FDR_bulk < 0.05, !gene %in% c("Tyr","Kdm5d")) %>%
+  filter(logFC_female <= -0.2 | logFC_female >= 0.2)
+
+candidate_effects_sig <- tibble(gene = quad_candidates) %>%
+  inner_join(bulk_female_sig %>% select(gene, logFC_female), by = "gene") %>%
+  mutate(direction = as.integer(logFC_female > 0))
+
+n_B <- nrow(candidate_effects_sig)
+k_B <- sum(candidate_effects_sig$direction)
+if (n_B > 0) {
+  bt_B <- binom.test(k_B, n_B, p = 0.5, alternative = "greater")
+  cat(sprintf("[SENSITIVITY] Positives: %d/%d (%.1f%%)  p=%.4g\n",
+              k_B, n_B, ifelse(n_B>0, 100*k_B/n_B, NA), bt_B$p.value))
+} else {
+  cat("[SENSITIVITY] No candidates passed female DEG filters (n_B = 0)\n")
+}
+```
+
+```{r}
+# number of positives (DEL females > WT females)
+k <- sum(candidate_effects$direction)
+n <- nrow(candidate_effects)
+
+# binomial test: H0 = 50% positive
+bt <- binom.test(k, n, p = 0.5, alternative = "greater")
+
+cat("Positives:", k, "out of", n, "\n")
+print(bt)
+
+```
+
+```{r}
+## --- Build merged df (already filtered for FDR etc.)
+bulk <- bulk_16pfemales %>%
+  rename(gene = matches("(?i)^gene\\s*name$"),
+         FDR_bulk   = FDR) %>%
+  filter(FDR_bulk < 0.05, !gene %in% c("Tyr","Kdm5d"))%>%
+  filter(logFC <= -0.2 | logFC >= 0.2)
+
+wtmf <- WTmalesfemales %>%
+  rename(gene = matches("(?i)^gene\\s*name$"),
+         logFC_wtmf = logFC) %>%
+  filter(!gene %in% c("Tyr"))
+
+df <- inner_join(
+  wtmf %>% select(gene, logFC_wtmf),
+  bulk %>% select(gene, logFC),
+  by = "gene"
+)
+
+## --- Select genes to label by your thresholds
+lab_df <- df %>%
+  filter(logFC > 2 | logFC < -1.5 |
+         logFC_wtmf > 0.4 | logFC_wtmf < -0.4)
+
+## --- Plot
+ggplot(df, aes(x = logFC, y = logFC_wtmf)) +
+  geom_point() +
+  geom_text_repel(data = lab_df, aes(label = gene), max.overlaps = Inf) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  ggpubr::stat_cor(method = "pearson", label.x = min(df$logFC) + 5, label.y = max(df$logFC_wtmf) - 1) +
+  labs(
+    title = "mRNA-seq DEGs between 16p females vs wt females",
+    x = "Fold Change from 16p female mutant vs 16p female WT",
+    y = "Fold Change from 16p female WT vs 16p male WT"
+  ) +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+
+
+quad_counts <- df %>%
+  mutate(
+    quadrant = case_when(
+      logFC_wtmf >= 0 & logFC >= 0 ~ "Q1: x+, y+",
+      logFC_wtmf <  0 & logFC >= 0 ~ "Q2: x-, y+",
+      logFC_wtmf <  0 & logFC <  0 ~ "Q3: x-, y-",
+      logFC_wtmf >= 0 & logFC <  0 ~ "Q4: x+, y-"
+    )
+  ) %>%
+  count(quadrant)
+
+quad_counts
+```
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+library(ggpubr)
+
+# --- Read data (3 columns: gene, x, y)
+df <- read_table(
+  file = "dSPNsDelSexComparison.txt",
+  col_names = c("gene","x","y"),
+  col_types = cols(
+    gene = col_character(),
+    x    = col_double(),
+    y    = col_double()
+  )
+) %>%
+  filter(is.finite(x), is.finite(y))
+
+# --- Set thresholds for labeling
+x_high <-  0.8    # label if x > 0.3
+x_low  <- -0.75    # label if x < -0.3
+y_high <-  0.75    # label if y > 2
+y_low  <- -0.5    # label if y < -1.5
+
+# Genes that meet thresholds
+lab_df <- df %>%
+  filter(x > x_high | x < x_low | y > y_high | y < y_low)
+
+# --- Pearson correlation
+ct <- cor.test(df$x, df$y, method = "pearson")
+cat(sprintf("Pearson r = %.3f, p = %.3g\n", ct$estimate, ct$p.value))
+
+# --- Quadrant counts
+quad_counts <- df %>%
+  mutate(quadrant = case_when(
+    x >= 0 & y >= 0 ~ "Q1: x+, y+",
+    x <  0 & y >= 0 ~ "Q2: x-, y+",
+    x <  0 & y <  0 ~ "Q3: x-, y-",
+    x >= 0 & y <  0 ~ "Q4: x+, y-"
+  )) %>%
+  count(quadrant) %>%
+  arrange(quadrant)
+
+print(quad_counts)
+
+# --- Plot with labels for thresholded genes
+ggplot(df, aes(x = x, y = y)) +
+  geom_point() +
+  geom_text_repel(data = lab_df, aes(label = gene), max.overlaps = Inf) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  ggpubr::stat_cor(method = "pearson") +
+  labs(
+    title = "D1-SPN DEGs between 16p males vs wt females",
+    x = "Fold Change from D1-SPNs males 16p11 vs males WT",
+    y = "Fold Change from D1-SPNs females WT vs males WT"
+  ) +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+```
+
+```{r}
+# --- Read data (3 columns: gene, x, y)
+df <- read_table(
+  file = "iSPNsDelSexComparison.txt",
+  col_names = c("gene","x","y"),
+  col_types = cols(
+    gene = col_character(),
+    x    = col_double(),
+    y    = col_double()
+  )
+) %>%
+  filter(is.finite(x), is.finite(y))
+
+# --- Set thresholds for labeling
+x_high <-  0.8    # label if x > 0.3
+x_low  <- -0.75    # label if x < -0.3
+y_high <-  0.75    # label if y > 2
+y_low  <- -0.5    # label if y < -1.5
+
+# Genes that meet thresholds
+lab_df <- df %>%
+  filter(x > x_high | x < x_low | y > y_high | y < y_low)
+
+# --- Pearson correlation
+ct <- cor.test(df$x, df$y, method = "pearson")
+cat(sprintf("Pearson r = %.3f, p = %.3g\n", ct$estimate, ct$p.value))
+
+# --- Quadrant counts
+quad_counts <- df %>%
+  mutate(quadrant = case_when(
+    x >= 0 & y >= 0 ~ "Q1: x+, y+",
+    x <  0 & y >= 0 ~ "Q2: x-, y+",
+    x <  0 & y <  0 ~ "Q3: x-, y-",
+    x >= 0 & y <  0 ~ "Q4: x+, y-"
+  )) %>%
+  count(quadrant) %>%
+  arrange(quadrant)
+
+print(quad_counts)
+
+# --- Plot with labels for thresholded genes
+ggplot(df, aes(x = x, y = y)) +
+  geom_point() +
+  geom_text_repel(data = lab_df, aes(label = gene), max.overlaps = Inf) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  ggpubr::stat_cor(method = "pearson") +
+  labs(
+    title = "D2-SPN DEGs between 16p males vs wt females",
+    x = "Fold Change from D2-SPNs males 16p11 vs males WT",
+    y = "Fold Change from D2-SPNs females WT vs males WT"
+  ) +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+```
+
+```{r}
+# --- Read data (3 columns: gene, x, y)
+df <- read_table(
+  file = "dSPNsDelSexComparisonFemale.txt",
+  col_names = c("gene","x","y"),
+  col_types = cols(
+    gene = col_character(),
+    x    = col_double(),
+    y    = col_double()
+  )
+) %>%
+  filter(is.finite(x), is.finite(y))
+
+df <- df %>%
+  filter(x <= -0.2 | x >= 0.2)
+
+# --- Set thresholds for labeling
+x_high <-  0.8    # label if x > 0.3
+x_low  <- -0.75    # label if x < -0.3
+y_high <-  0.75    # label if y > 2
+y_low  <- -0.5    # label if y < -1.5
+
+# Genes that meet thresholds
+lab_df <- df %>%
+  filter(x > x_high | x < x_low | y > y_high | y < y_low)
+
+# --- Pearson correlation
+ct <- cor.test(df$x, df$y, method = "pearson")
+cat(sprintf("Pearson r = %.3f, p = %.3g\n", ct$estimate, ct$p.value))
+
+# --- Quadrant counts
+quad_counts <- df %>%
+  mutate(quadrant = case_when(
+    x >= 0 & y >= 0 ~ "Q1: x+, y+",
+    x <  0 & y >= 0 ~ "Q2: x-, y+",
+    x <  0 & y <  0 ~ "Q3: x-, y-",
+    x >= 0 & y <  0 ~ "Q4: x+, y-"
+  )) %>%
+  count(quadrant) %>%
+  arrange(quadrant)
+
+print(quad_counts)
+
+# --- Plot with labels for thresholded genes
+ggplot(df, aes(x = x, y = y)) +
+  geom_point() +
+  geom_text_repel(data = lab_df, aes(label = gene), max.overlaps = Inf) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  ggpubr::stat_cor(method = "pearson") +
+  labs(
+    title = "D1-SPN DEGs between 16p females vs wt females",
+    x = "Fold Change from D1-SPNs females 16p11 vs males WT",
+    y = "Fold Change from D1-SPNs females WT vs males WT"
+  ) +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+```
+
+```{r}
+# --- Read data (3 columns: gene, x, y)
+df <- read_table(
+  file = "iSPNsDelSexComparisonFemale.txt",
+  col_names = c("gene","x","y"),
+  col_types = cols(
+    gene = col_character(),
+    x    = col_double(),
+    y    = col_double()
+  )
+) %>%
+  filter(is.finite(x), is.finite(y))
+
+df <- df %>%
+  filter(x <= -0.2 | x >= 0.2)
+
+# --- Set thresholds for labeling
+x_high <-  0.8    # label if x > 0.3
+x_low  <- -0.75    # label if x < -0.3
+y_high <-  0.75    # label if y > 2
+y_low  <- -0.5    # label if y < -1.5
+
+# Genes that meet thresholds
+lab_df <- df %>%
+  filter(x > x_high | x < x_low | y > y_high | y < y_low)
+
+# --- Pearson correlation
+ct <- cor.test(df$x, df$y, method = "pearson")
+cat(sprintf("Pearson r = %.3f, p = %.3g\n", ct$estimate, ct$p.value))
+
+# --- Quadrant counts
+quad_counts <- df %>%
+  mutate(quadrant = case_when(
+    x >= 0 & y >= 0 ~ "Q1: x+, y+",
+    x <  0 & y >= 0 ~ "Q2: x-, y+",
+    x <  0 & y <  0 ~ "Q3: x-, y-",
+    x >= 0 & y <  0 ~ "Q4: x+, y-"
+  )) %>%
+  count(quadrant) %>%
+  arrange(quadrant)
+
+print(quad_counts)
+
+# --- Plot with labels for thresholded genes
+ggplot(df, aes(x = x, y = y)) +
+  geom_point() +
+  geom_text_repel(data = lab_df, aes(label = gene), max.overlaps = Inf) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  stat_smooth(method = "lm", color = "blue", se = FALSE) +
+  ggpubr::stat_cor(method = "pearson") +
+  labs(
+    title = "D2-SPN DEGs between 16p females vs wt females",
+    x = "Fold Change from D2-SPNs females 16p11 vs males WT",
+    y = "Fold Change from D2-SPNs females WT vs males WT"
+  ) +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+```
